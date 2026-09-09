@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entregas diarias — Imágenes &amp; HTML</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B2545;
+    --blue:#1E6FD9;
+    --blue-deep:#154C99;
+    --blue-pale:#E7F0FC;
+    --paper:#FAF9F5;
+    --line:#DCE2EA;
+    --amber:#C9860B;
+    --amber-pale:#FBF0DA;
+    --red:#B8433B;
+    --red-pale:#FAE7E4;
+    --green:#2F8F5B;
+    --green-pale:#E4F3EA;
+    --ink:#1B2430;
+    --ink-soft:#5B6474;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Figtree',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Montserrat',sans-serif;margin:0;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 22px 60px;}
+
+  /* ---------- Masthead ---------- */
+  .masthead{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:24px;
+    align-items:end;
+    border-bottom:3px solid var(--navy);
+    padding-bottom:18px;
+    margin-bottom:22px;
+  }
+  .masthead h1{font-size:26px;font-weight:800;color:var(--navy);letter-spacing:-0.01em;}
+  .masthead p{margin:6px 0 0;color:var(--ink-soft);font-size:14px;}
+  .days-left{
+    text-align:right;
+  }
+  .days-left .n{
+    font-family:'Montserrat',sans-serif;
+    font-weight:800;
+    font-size:46px;
+    color:var(--blue-deep);
+    line-height:1;
+  }
+  .days-left .lab{font-size:12.5px;color:var(--ink-soft);}
+
+  .progress-row{display:flex;align-items:center;gap:14px;margin-bottom:26px;}
+  .progress-track{flex:1;height:10px;background:var(--blue-pale);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue-deep));border-radius:6px;transition:width .3s;}
+  .progress-row .pct{font-size:13px;color:var(--ink-soft);white-space:nowrap;font-weight:600;}
+
+  /* ---------- Panels ---------- */
+  .panel{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px 22px;
+    margin-bottom:22px;
+  }
+  .panel-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--navy);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  /* ---------- Log form ---------- */
+  .log-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr 1fr 1.3fr auto;
+    gap:14px;
+    align-items:start;
+  }
+  .field label{
+    display:block;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input, .field select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    font-family:'Figtree',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue);}
+  .html-toggle{display:flex;align-items:center;gap:8px;margin-top:8px;grid-column:1 / -1;}
+  .html-toggle input{width:auto;}
+  .html-toggle label{font-size:13px;font-weight:600;color:var(--ink);}
+  .notes-row{grid-column:1 / -1;margin-top:2px;}
+  .notes-row textarea{
+    width:100%;min-height:64px;resize:vertical;
+    border:1px solid var(--line);border-radius:7px;padding:9px 10px;
+    font-family:'Figtree',sans-serif;font-size:13.5px;color:var(--ink);
+  }
+  .save-btn{
+    grid-column:1 / -1;
+    justify-self:start;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:7px;
+    font-family:'Figtree',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .save-btn:hover{background:var(--blue-deep);}
+  .cancel-link{
+    grid-column:1 / -1;
+    justify-self:start;
+    background:none;border:none;color:var(--ink-soft);
+    font-size:13px;cursor:pointer;text-decoration:underline;margin-top:-6px;
+  }
+  .editing-tag{
+    font-size:11.5px;background:var(--amber-pale);color:var(--amber);
+    padding:3px 9px;border-radius:20px;font-weight:700;
+  }
+
+  /* ---------- Gantt ---------- */
+  .week-row{margin-bottom:14px;}
+  .week-label{font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:6px;padding-left:2px;}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .day-head{font-size:10.5px;text-align:center;color:var(--ink-soft);font-weight:700;}
+  .day-cell{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:8px;
+    min-height:74px;
+    padding:6px 6px 8px;
+    background:#fff;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:box-shadow .15s, transform .1s;
+  }
+  .day-cell:hover{box-shadow:0 2px 8px rgba(11,37,69,0.12);transform:translateY(-1px);}
+  .day-cell.empty{background:transparent;border:none;cursor:default;}
+  .day-cell.empty:hover{box-shadow:none;transform:none;}
+  .day-cell.out-of-range{background:#F4F3EF;color:#B7BCC4;cursor:default;}
+  .day-cell.out-of-range:hover{box-shadow:none;transform:none;}
+  .day-num{font-size:12.5px;font-weight:700;color:var(--ink);}
+  .day-cell.today{border:2px solid var(--amber);}
+  .day-cell.today .day-num{color:var(--amber);}
+  .day-cell.missed{border-color:var(--red);background:var(--red-pale);}
+  .day-cell.deadline{border:2px solid var(--navy);}
+  .day-bar-track{height:5px;border-radius:3px;background:var(--blue-pale);margin-top:6px;overflow:hidden;}
+  .day-bar-fill{height:100%;background:var(--blue);}
+  .day-meta{display:flex;align-items:center;justify-content:space-between;margin-top:6px;}
+  .day-count{font-size:15px;font-weight:800;color:var(--blue-deep);}
+  .day-count.zero{color:#C7CCD4;font-weight:600;font-size:12px;}
+  .html-badge{
+    font-size:9.5px;font-weight:700;color:var(--green);
+    background:var(--green-pale);border-radius:4px;padding:1.5px 5px;
+  }
+  .day-modality{font-size:9px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-soft);margin-top:12px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+
+  /* ---------- Summary ---------- */
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  .stat{background:var(--blue-pale);border-radius:9px;padding:14px 16px;}
+  .stat .v{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;color:var(--navy);}
+  .stat .l{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .modality-list{display:flex;flex-direction:column;gap:8px;}
+  .modality-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+  .modality-row .name{width:150px;flex-shrink:0;color:var(--ink);font-weight:600;}
+  .modality-row .bar-track{flex:1;height:8px;background:var(--blue-pale);border-radius:4px;overflow:hidden;}
+  .modality-row .bar-fill{height:100%;background:var(--blue);border-radius:4px;}
+  .modality-row .count{width:34px;text-align:right;color:var(--ink-soft);font-size:12px;}
+
+  /* ---------- Log table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:11px;color:var(--ink-soft);font-weight:700;padding:6px 8px;border-bottom:2px solid var(--navy);}
+  td{padding:8px 8px;border-bottom:1px solid var(--line);color:var(--ink);}
+  tr:hover td{background:var(--blue-pale);}
+  .row-actions{display:flex;gap:10px;}
+  .row-actions button{border:none;background:none;cursor:pointer;font-size:12px;color:var(--blue-deep);font-weight:600;padding:0;}
+  .row-actions button.del{color:var(--red);}
+  .empty-log{color:var(--ink-soft);font-size:13px;padding:14px 0;text-align:center;}
+
+  .config-row{display:flex;gap:16px;align-items:end;margin-bottom:6px;flex-wrap:wrap;}
+  .config-row .field{max-width:180px;}
+  .config-note{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+
+  @media (max-width:720px){
+    .masthead{grid-template-columns:1fr;}
+    .days-left{text-align:left;}
+    .log-grid{grid-template-columns:1fr 1fr;}
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .days{grid-template-columns:repeat(7,1fr);}
+    .day-cell{min-height:64px;padding:4px;}
+    .day-modality{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div>
+      <h1>Entregas diarias — Imágenes &amp; HTML</h1>
+      <p id="rangeLabel">Cargando rango de fechas…</p>
+      <p id="saveStatus" style="font-size:12px;font-weight:700;opacity:0;transition:opacity .3s;margin-top:4px;">Guardado ✓</p>
+    </div>
+    <div class="days-left">
+      <div class="n" id="daysLeft">—</div>
+      <div class="lab">días hasta el 10 oct 2026</div>
+    </div>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="pct" id="progressPct">0 de 0 días con registro</div>
+  </div>
+
+  <!-- LOG PANEL -->
+  <div class="panel">
+    <div class="panel-title">
+      <span id="formTitle">Registrar entrega</span>
+      <span class="editing-tag" id="editingTag" style="display:none;">Editando</span>
+    </div>
+    <div class="log-grid" id="logForm">
+      <div class="field">
+        <label for="fDate">Fecha</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="field">
+        <label for="fCount">Imágenes hechas</label>
+        <input type="number" id="fCount" min="0" step="1" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="fModality">Modalidad</label>
+        <input type="text" id="fModality" list="modalityOptions" placeholder="Ej. Post, Historia...">
+        <datalist id="modalityOptions">
+          <option value="Post">
+          <option value="Historia">
+          <option value="Carrusel">
+          <option value="Banner web">
+          <option value="Thumbnail">
+          <option value="Anuncio pagado">
+        </datalist>
+      </div>
+      <div class="field">
+        <label for="fSize">Tamaño de imagen</label>
+        <input type="text" id="fSize" list="sizeOptions" placeholder="Ej. 1080x1080">
+        <datalist id="sizeOptions">
+          <option value="1080x1080">
+          <option value="1080x1920">
+          <option value="1200x628">
+          <option value="1920x1080">
+        </datalist>
+      </div>
+      <div class="field" style="align-self:end;">
+        <button class="save-btn" id="saveBtn" style="width:100%;margin-top:0;">Guardar</button>
+      </div>
+
+      <div class="html-toggle">
+        <input type="checkbox" id="fHtml">
+        <label for="fHtml">También se hizo HTML este día</label>
+      </div>
+
+      <div class="notes-row">
+        <label for="fNotes" style="display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;">Notas (código / pendientes)</label>
+        <textarea id="fNotes" placeholder="Anota aquí snippets, ajustes de código o pendientes de esta entrega..."></textarea>
+      </div>
+
+      <button class="cancel-link" id="cancelBtn" style="display:none;">Cancelar edición</button>
+    </div>
+  </div>
+
+  <!-- GANTT -->
+  <div class="panel">
+    <div class="panel-title">Calendario de entregas</div>
+    <div class="config-row">
+      <div class="field">
+        <label for="startDate">Inicio del plan</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="config-note">El deadline (10 oct 2026) queda fijo. Ajusta el inicio si empezaste antes.</div>
+    </div>
+    <div id="ganttContainer"></div>
+    <div class="legend">
+      <span><i style="background:var(--blue);"></i> Día con entregas</span>
+      <span><i style="background:#fff;border:1px solid var(--line);"></i> Sin registro</span>
+      <span><i style="background:var(--amber-pale);border:2px solid var(--amber);"></i> Hoy</span>
+      <span><i style="background:var(--red-pale);border:1px solid var(--red);"></i> Día pasado sin registro</span>
+      <span><i style="background:var(--green-pale);color:var(--green);"></i> </> HTML entregado</span>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="panel">
+    <div class="panel-title">Resumen</div>
+    <div class="summary-grid">
+      <div class="stat"><div class="v" id="statTotalImg">0</div><div class="l">imágenes totales</div></div>
+      <div class="stat"><div class="v" id="statHtmlDays">0</div><div class="l">días con HTML</div></div>
+      <div class="stat"><div class="v" id="statActiveDays">0</div><div class="l">días con registro</div></div>
+      <div class="stat"><div class="v" id="statAvg">0</div><div class="l">promedio img / día activo</div></div>
+    </div>
+    <div class="modality-list" id="modalityList"></div>
+  </div>
+
+  <!-- LOG TABLE -->
+  <div class="panel">
+    <div class="panel-title">Bitácora completa</div>
+    <table>
+      <thead>
+        <tr><th>Fecha</th><th>Imágenes</th><th>Modalidad</th><th>Tamaño</th><th>HTML</th><th>Notas</th><th></th></tr>
+      </thead>
+      <tbody id="logTableBody"></tbody>
+    </table>
+    <div class="empty-log" id="emptyLog" style="display:none;">Aún no hay entregas registradas. Usa el formulario de arriba para agregar la primera.</div>
+  </div>
+
+</div>
+
+<script>
+const DEADLINE = '2026-10-10';
+const STORAGE_KEY = 'gantt-tec-data';
+const DEFAULT_START = '2026-09-01';
+
+let state = {
+  startDate: DEFAULT_START,
+  entries: {} // { 'YYYY-MM-DD': {count, modality, size, html, notes} }
+};
+let editingDate = null;
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function parseDate(s){
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function fmtDate(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function fmtLong(d){
+  return d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+}
+
+async function loadState(){
+  try{
+    const res = await fetch('/api/entries');
+    if(res.ok){
+      const parsed = await res.json();
+      state.startDate = parsed.startDate || DEFAULT_START;
+      state.entries = parsed.entries || {};
+    }
+  }catch(e){
+    console.log('Sin datos previos o sin conexión con la base de datos, iniciando limpio.', e);
+    showSaveStatus('No se pudo conectar con la base de datos. Revisa que la función esté desplegada.', true);
+  }
+}
+
+async function saveState(){
+  try{
+    const res = await fetch('/api/entries', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(state)
+    });
+    if(!res.ok){
+      console.error('No se pudo guardar.');
+      showSaveStatus('No se pudo guardar en la base de datos.', true);
+    } else {
+      showSaveStatus('Guardado ✓', false);
+    }
+  }catch(e){
+    console.error('Error guardando estado', e);
+    showSaveStatus('Error de conexión al guardar.', true);
+  }
+}
+
+let saveStatusTimeout = null;
+function showSaveStatus(msg, isError){
+  const el = document.getElementById('saveStatus');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--red)' : 'var(--green)';
+  el.style.opacity = '1';
+  clearTimeout(saveStatusTimeout);
+  saveStatusTimeout = setTimeout(() => { el.style.opacity = '0'; }, 2500);
+}
+
+function daysBetween(a,b){
+  return Math.round((b-a)/(1000*60*60*24));
+}
+
+function render(){
+  const start = parseDate(state.startDate);
+  const deadline = parseDate(DEADLINE);
+  const today = parseDate(todayStr());
+
+  document.getElementById('startDate').value = state.startDate;
+  document.getElementById('rangeLabel').textContent =
+    `Del ${fmtLong(start)} al ${fmtLong(deadline)} · ${daysBetween(start,deadline)+1} días de plan`;
+
+  const left = daysBetween(today, deadline);
+  document.getElementById('daysLeft').textContent = left >= 0 ? left : 0;
+
+  // progress: days elapsed with entries vs total plan days up to today (or full range)
+  const totalPlanDays = daysBetween(start, deadline) + 1;
+  const entryDates = Object.keys(state.entries);
+  const activeDays = entryDates.length;
+  const pct = totalPlanDays > 0 ? Math.min(100, Math.round((activeDays/totalPlanDays)*100)) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = `${activeDays} de ${totalPlanDays} días con registro (${pct}%)`;
+
+  renderGantt(start, deadline, today);
+  renderSummary(start, deadline);
+  renderTable();
+}
+
+function renderGantt(start, deadline, today){
+  const container = document.getElementById('ganttContainer');
+  container.innerHTML = '';
+
+  // find Monday on/before start
+  const firstDay = new Date(start);
+  const dow = (firstDay.getDay() + 6) % 7; // 0=Mon
+  firstDay.setDate(firstDay.getDate() - dow);
+
+  const lastDay = new Date(deadline);
+  const dowEnd = (lastDay.getDay() + 6) % 7;
+  lastDay.setDate(lastDay.getDate() + (6 - dowEnd));
+
+  const dayNames = ['L','M','X','J','V','S','D'];
+  let cursor = new Date(firstDay);
+  let maxCount = 1;
+  Object.values(state.entries).forEach(e => { if(e.count > maxCount) maxCount = e.count; });
+
+  while(cursor <= lastDay){
+    const weekStart = new Date(cursor);
+    const weekEnd = new Date(cursor); weekEnd.setDate(weekEnd.getDate()+6);
+
+    const weekRow = document.createElement('div');
+    weekRow.className = 'week-row';
+
+    const label = document.createElement('div');
+    label.className = 'week-label';
+    label.textContent = `Semana del ${fmtLong(weekStart)} al ${fmtLong(weekEnd)}`;
+    weekRow.appendChild(label);
+
+    const daysDiv = document.createElement('div');
+    daysDiv.className = 'days';
+
+    for(let i=0;i<7;i++){
+      const d = new Date(cursor); d.setDate(d.getDate()+i);
+      const dStr = fmtDate(d);
+      const inRange = d >= start && d <= deadline;
+      const cell = document.createElement('div');
+
+      if(!inRange){
+        cell.className = 'day-cell out-of-range';
+        cell.innerHTML = `<div class="day-num">${d.getDate()}</div>`;
+        daysDiv.appendChild(cell);
+        continue;
+      }
+
+      cell.className = 'day-cell';
+      const entry = state.entries[dStr];
+      const isToday = dStr === todayStr();
+      const isPastMissed = d < today && !entry && dStr !== todayStr();
+      const isDeadline = dStr === DEADLINE;
+
+      if(isToday) cell.classList.add('today');
+      if(isPastMissed) cell.classList.add('missed');
+      if(isDeadline) cell.classList.add('deadline');
+
+      let inner = `<div class="day-num">${d.getDate()}</div>`;
+      if(entry){
+        const barPct = Math.min(100, Math.round((entry.count/maxCount)*100));
+        inner += `<div class="day-bar-track"><div class="day-bar-fill" style="width:${barPct}%"></div></div>`;
+        inner += `<div class="day-meta">
+                    <span class="day-count">${entry.count}</span>
+                    ${entry.html ? '<span class="html-badge">&lt;/&gt;</span>' : ''}
+                   </div>`;
+        if(entry.modality) inner += `<div class="day-modality">${escapeHtml(entry.modality)}</div>`;
+      } else {
+        inner += `<div class="day-count zero">sin registro</div>`;
+      }
+      cell.innerHTML = inner;
+      cell.addEventListener('click', () => openForEdit(dStr));
+      daysDiv.appendChild(cell);
+    }
+
+    weekRow.appendChild(daysDiv);
+    container.appendChild(weekRow);
+    cursor.setDate(cursor.getDate()+7);
+  }
+}
+
+function renderSummary(start, deadline){
+  const entries = Object.entries(state.entries);
+  const totalImg = entries.reduce((s,[,e]) => s + (Number(e.count)||0), 0);
+  const htmlDays = entries.filter(([,e]) => e.html).length;
+  const activeDays = entries.length;
+  const avg = activeDays > 0 ? (totalImg/activeDays).toFixed(1) : '0';
+
+  document.getElementById('statTotalImg').textContent = totalImg;
+  document.getElementById('statHtmlDays').textContent = htmlDays;
+  document.getElementById('statActiveDays').textContent = activeDays;
+  document.getElementById('statAvg').textContent = avg;
+
+  const byModality = {};
+  entries.forEach(([,e]) => {
+    const key = (e.modality || 'Sin especificar').trim() || 'Sin especificar';
+    byModality[key] = (byModality[key]||0) + (Number(e.count)||0);
+  });
+  const maxMod = Math.max(1, ...Object.values(byModality));
+  const list = document.getElementById('modalityList');
+  list.innerHTML = '';
+  Object.entries(byModality).sort((a,b)=>b[1]-a[1]).forEach(([name,count]) => {
+    const row = document.createElement('div');
+    row.className = 'modality-row';
+    row.innerHTML = `<div class="name">${escapeHtml(name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round((count/maxMod)*100)}%"></div></div>
+      <div class="count">${count}</div>`;
+    list.appendChild(row);
+  });
+}
+
+function renderTable(){
+  const body = document.getElementById('logTableBody');
+  const empty = document.getElementById('emptyLog');
+  const dates = Object.keys(state.entries).sort((a,b) => b.localeCompare(a));
+  body.innerHTML = '';
+  if(dates.length === 0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  dates.forEach(dStr => {
+    const e = state.entries[dStr];
+    const tr = document.createElement('tr');
+    const d = parseDate(dStr);
+    tr.innerHTML = `
+      <td>${d.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td>${e.count}</td>
+      <td>${escapeHtml(e.modality||'—')}</td>
+      <td>${escapeHtml(e.size||'—')}</td>
+      <td>${e.html ? 'Sí' : 'No'}</td>
+      <td style="max-width:220px;white-space:pre-wrap;">${escapeHtml(e.notes||'—')}</td>
+      <td><div class="row-actions">
+            <button data-edit="${dStr}">Editar</button>
+            <button class="del" data-del="${dStr}">Eliminar</button>
+          </div></td>`;
+    body.appendChild(tr);
+  });
+
+  body.querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', () => openForEdit(btn.dataset.edit));
+  });
+  body.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if(confirm('¿Eliminar esta entrega del registro?')){
+        delete state.entries[btn.dataset.del];
+        await saveState();
+        render();
+      }
+    });
+  });
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function openForEdit(dStr){
+  editingDate = dStr;
+  const e = state.entries[dStr] || {count:'',modality:'',size:'',html:false,notes:''};
+  document.getElementById('fDate').value = dStr;
+  document.getElementById('fCount').value = e.count ?? '';
+  document.getElementById('fModality').value = e.modality || '';
+  document.getElementById('fSize').value = e.size || '';
+  document.getElementById('fHtml').checked = !!e.html;
+  document.getElementById('fNotes').value = e.notes || '';
+  document.getElementById('editingTag').style.display = 'inline-block';
+  document.getElementById('formTitle').textContent = 'Editar entrega';
+  document.getElementById('cancelBtn').style.display = 'inline-block';
+  document.getElementById('fDate').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function resetForm(){
+  editingDate = null;
+  document.getElementById('fDate').value = todayStr();
+  document.getElementById('fCount').value = '';
+  document.getElementById('fModality').value = '';
+  document.getElementById('fSize').value = '';
+  document.getElementById('fHtml').checked = false;
+  document.getElementById('fNotes').value = '';
+  document.getElementById('editingTag').style.display = 'none';
+  document.getElementById('formTitle').textContent = 'Registrar entrega';
+  document.getElementById('cancelBtn').style.display = 'none';
+}
+
+async function handleSave(){
+  const dStr = document.getElementById('fDate').value;
+  if(!dStr){ alert('Elige una fecha.'); return; }
+  const count = Number(document.getElementById('fCount').value) || 0;
+  const modality = document.getElementById('fModality').value.trim();
+  const size = document.getElementById('fSize').value.trim();
+  const html = document.getElementById('fHtml').checked;
+  const notes = document.getElementById('fNotes').value.trim();
+
+  state.entries[dStr] = {count, modality, size, html, notes};
+  await saveState();
+  resetForm();
+  render();
+}
+
+async function handleStartDateChange(){
+  const val = document.getElementById('startDate').value;
+  if(val){
+    state.startDate = val;
+    await saveState();
+    render();
+  }
+}
+
+document.getElementById('saveBtn').addEventListener('click', handleSave);
+document.getElementById('cancelBtn').addEventListener('click', resetForm);
+document.getElementById('startDate').addEventListener('change', handleStartDateChange);
+
+(async function init(){
+  await loadState();
+  resetForm();
+  render();
+})();
+</script>
+</body>
+</html>
